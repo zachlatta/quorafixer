@@ -8,6 +8,7 @@ const fD = "view"
 var files = []string{
 	"index.html",
 	"css/quorafixer.css",
+	"favicon.ico",
 }
 
 func RenderFile(w http.ResponseWriter, r *http.Request, file string) {
