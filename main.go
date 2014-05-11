@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/zachlatta/quorafixer/view"
 )
 
 func Log(handler http.Handler) http.Handler {
@@ -18,18 +19,23 @@ func Log(handler http.Handler) http.Handler {
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", rootHandler)
-	r.HandleFunc("/{path}", quoraHandler)
+	r.HandleFunc("/{path:.*}", quoraHandler)
 	http.Handle("/", r)
 	http.ListenAndServe(":4000", Log(http.DefaultServeMux))
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(homepage))
+	view.RenderFile(w, r, "index.html")
 }
 
 func quoraHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	path := vars["path"]
+
+	if view.Exists(path) {
+		view.RenderFile(w, r, path)
+		return
+	}
 
 	resp, err := http.Get("https://quora.com/" + path + "?share=1")
 	if err != nil {
@@ -42,18 +48,3 @@ func quoraHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 }
-
-const homepage = `
-<!doctype html>
-<html>
-<head>
-<title>QuoraFix - View Quora Without An Account</title>
-<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.4.2/pure-min.css">
-</head>
-<body>
-<div class="content">
-test
-</div>
-</body>
-</html>
-`
