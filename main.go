@@ -3,15 +3,27 @@ package main
 import (
 	"io"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	http.HandleFunc("/", handler)
+	r := mux.NewRouter()
+	r.HandleFunc("/", rootHandler)
+	r.HandleFunc("/{path}", quoraHandler)
+	http.Handle("/", r)
 	http.ListenAndServe(":4000", nil)
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Get("https://quora.com" + r.URL.Path + "?share=1")
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(homepage))
+}
+
+func quoraHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	path := vars["path"]
+
+	resp, err := http.Get("https://quora.com/" + path + "?share=1")
 	if err != nil {
 		panic(err)
 	}
@@ -22,3 +34,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 }
+
+const homepage = `
+<!doctype html>
+<html>
+<head>
+<title>QuoraFix - View Quora Without An Account</title>
+<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.4.2/pure-min.css">
+</head>
+<body>
+<div class="content">
+test
+</div>
+</body>
+</html>
+`
