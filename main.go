@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/zachlatta/quorafixer/view"
@@ -17,11 +18,16 @@ func Log(handler http.Handler) http.Handler {
 }
 
 func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+
 	r := mux.NewRouter()
 	r.HandleFunc("/", rootHandler)
 	r.HandleFunc("/{path:.*}", quoraHandler)
 	http.Handle("/", r)
-	http.ListenAndServe(":4000", Log(http.DefaultServeMux))
+	http.ListenAndServe(":"+port, Log(http.DefaultServeMux))
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
