@@ -2,17 +2,25 @@ package main
 
 import (
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
+
+func Log(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
+		handler.ServeHTTP(w, r)
+	})
+}
 
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", rootHandler)
 	r.HandleFunc("/{path}", quoraHandler)
 	http.Handle("/", r)
-	http.ListenAndServe(":4000", nil)
+	http.ListenAndServe(":4000", Log(http.DefaultServeMux))
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
